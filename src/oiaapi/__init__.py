@@ -3,7 +3,8 @@ import json
 import copy
 from openai import OpenAI
 from typing import List, Dict, Optional, Any, Union
-from .content import ContentPart
+
+from .content import Image, ContentPart
 from .history import ConversationHistory
 from .metrics import Metrics
 
@@ -15,17 +16,16 @@ class Chat:
     de uso a una clase especializada.
     """
 
-    def __init__(self, api_key: Optional[str] = None, model: str = "gpt-5-mini", system_prompt: Optional[str] = None, **kwargs):
+    def __init__(self, openia: OpenAI, model: str = "gpt-5-mini", system_prompt: Optional[str] = None):
         """
         Inicializa la instancia de chat.
 
         Args:
-            api_key: Clave de API de OpenAI. Si es None, intentará usar la variable de entorno OPENAI_API_KEY.
+            openia: Instancia de OpenAI a utilizar para este chat.
             model: Identificador del modelo a utilizar por defecto.
             system_prompt: Instrucciones base opcionales para definir el comportamiento del asistente.
-            **kwargs: Otros parámetros opcionales para la instancia del cliente.
         """
-        self.client = OpenAI(api_key=api_key, **kwargs)
+        self.openia = openia
         self.model = model
 
         # Instancias delegadas
@@ -35,6 +35,10 @@ class Chat:
         # Si se provee un system prompt, lo registramos como nodo
         if system_prompt:
             self.history.add_system(system_prompt)
+
+    def set_openia(self, openia: OpenAI) -> None:
+        """Cambia la instancia activa de OpenAI utilizada para conectarse a la API."""
+        self.openia = openia
 
     def set_system_prompt(self, system_prompt: Optional[str]) -> None:
         """
@@ -57,21 +61,25 @@ class Chat:
         """
         self.model = model
 
-    def copy(self) -> "Chat":
+    def copy(self, openia: Optional[OpenAI] = None) -> "Chat":
         """
-        Crea y devuelve una copia exacta e independiente del cliente actual.
-        Alterar la copia no afectará el historial ni las métricas del cliente original.
+        Crea y devuelve una copia exacta e independiente del chat actual.
+        Alterar la copia no afectará el historial ni las métricas del chat original.
+
+        Args:
+            openia: Instancia opcional de OpenAI para usar en la copia. 
+                    Si es None, se usa la misma instancia del chat original.
         """
-        new_client = Chat(
-            api_key=self.client.api_key,
+        new_chat = Chat(
+            openia=openia if openia else self.openia,
             model=self.model
         )
 
         # Copiamos profundamente las instancias delegadas
-        new_client.history = self.history.deepcopy()
-        new_client.metrics = self.metrics.deepcopy()
+        new_chat.history = self.history.deepcopy()
+        new_chat.metrics = self.metrics.deepcopy()
 
-        return new_client
+        return new_chat
 
     def chat(self, *messages: Any) -> str:
         """
@@ -114,8 +122,8 @@ class Chat:
             # Capturar los IDs activos de esta solicitud (incluyendo el del usuario actual)
             active_ids = self.history.get_active_node_ids() + [user_node_id]
 
-            # Petición a la API
-            response = self.client.chat.completions.create(
+            # Petición a la API usando self.openia
+            response = self.openia.chat.completions.create(
                 model=self.model,
                 messages=api_messages
             )
@@ -168,22 +176,60 @@ class Chat:
         with open(path, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=4)
 
-    @classmethod
-    def load(cls, path: str, api_key: Optional[str] = None, **kwargs) -> "Chat":
+
+class Client:
+    """
+    Clase principal que administra la instancia persistente del motor de OpenAI y 
+    nos permite iniciar nuevas conversaciones (chats) o recuperar conversaciones guardadas.
+    """
+
+    def __init__(self, api_key: Optional[str] = None, **kwargs):
         """
-        Carga una instancia de Chat desde un archivo JSON.
+        Inicializa un cliente maestro conectándose a OpenAI una sola vez.
+
+        Args:
+            api_key: Opcional, llave de acceso a OpenAI.
+            **kwargs: Otras configuraciones que acepta la clase nativa openai.OpenAI.
+        """
+        self.openia = OpenAI(api_key=api_key, **kwargs)
+
+    def chat(self, model: str = "gpt-4o-mini", system_prompt: Optional[str] = None) -> Chat:
+        """
+        Inicia y devuelve un entorno completamente nuevo de Chat vinculado a este cliente.
+
+        Args:
+            model: Identificador del modelo (ej. 'gpt-4o', 'gpt-3.5-turbo').
+            system_prompt: Propósito raíz del Chat que se va a iniciar.
+        """
+        return Chat(
+            openia=self.openia,
+            model=model,
+            system_prompt=system_prompt
+        )
+
+    def load_chat(self, path: str) -> Chat:
+        """
+        Carga una instancia de un Chat usando un archivo JSON, y la conecta a este cliente.
+
+        Args:
+            path: La ruta donde se ubica el JSON exportado previamente.
         """
         if not os.path.exists(path):
-            raise FileNotFoundError(f"No se encontró el archivo en: {path}")
+            raise FileNotFoundError(
+                f"No se encontró el archivo en la ruta: {path}")
 
         with open(path, "r", encoding="utf-8") as f:
             data = json.load(f)
 
-        # Crear nueva instancia
-        instance = cls(api_key=api_key, model=data["model"], **kwargs)
+        # Usar la instancia madre de OpenAI contenida en self.openia
+        restored_chat = Chat(openia=self.openia, model=data["model"])
 
-        # Restaurar estado delegado
-        instance.history = ConversationHistory.from_dict(data["history"])
-        instance.metrics = Metrics.from_dict(data["metrics"])
+        # Restaurar estado del historial y métricas
+        restored_chat.history = ConversationHistory.from_dict(data["history"])
+        restored_chat.metrics = Metrics.from_dict(data["metrics"])
 
-        return instance
+        return restored_chat
+
+
+__all__ = ["Client", "Chat", "Image",
+           "ContentPart", "ConversationHistory", "Metrics"]

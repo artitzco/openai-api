@@ -1,6 +1,6 @@
 import copy
 import pandas as pd
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 
 
 class Metrics:
