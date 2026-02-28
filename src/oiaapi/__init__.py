@@ -3,7 +3,7 @@ import json
 from openai import OpenAI
 from typing import Optional
 
-from .chat import Chat
+from .core import Chat
 from .content import Image, ContentPart
 from .history import ConversationHistory
 from .metrics import Metrics

@@ -1,10 +1,8 @@
-import os
 import json
-import copy
 from openai import OpenAI
-from typing import List, Dict, Optional, Any, Union
+from typing import Optional, Any
 
-from .content import Image, ContentPart
+from .content import ContentPart
 from .history import ConversationHistory
 from .metrics import Metrics
 

@@ -1,0 +1,57 @@
+<mxfile host="Electron" modified="2026-02-28T13:00:00.000Z" agent="Mozilla/5.0" version="21.6.8" type="device">
+  <diagram id="Oiaapi_Architect" name="Architecture">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- Classes -->
+        <mxCell id="Class_Client" value="&lt;b&gt;Client&lt;/b&gt;&lt;hr&gt;+ openia: OpenAI&lt;hr&gt;+ chat(model, prompt): Chat&lt;br&gt;+ load_chat(path): Chat" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;align=left;spacing=10;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="50" y="200" width="220" height="120" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="Class_Chat" value="&lt;b&gt;Chat&lt;/b&gt;&lt;hr&gt;+ openia: OpenAI&lt;br&gt;+ model: str&lt;br&gt;+ history: ConversationHistory&lt;br&gt;+ metrics: Metrics&lt;hr&gt;+ set_openia(openia)&lt;br&gt;+ set_system_prompt(prompt)&lt;br&gt;+ set_model(model)&lt;br&gt;+ copy(openia): Chat&lt;br&gt;+ chat(*messages): str&lt;br&gt;+ clear(include_system)&lt;br&gt;+ save(path)" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;align=left;spacing=10;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="360" y="150" width="260" height="240" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="Class_ConvHist" value="&lt;b&gt;ConversationHistory&lt;/b&gt;&lt;hr&gt;- _nodes: List&lt;br&gt;- _next_id: int&lt;hr&gt;+ add_system(prompt)&lt;br&gt;+ add_user(content)&lt;br&gt;+ add_assistant(user_id, content)&lt;br&gt;+ toggle(node_id, active)&lt;br&gt;+ build_messages(): List&lt;br&gt;+ get_active_node_ids(): List&lt;br&gt;+ to_dataframe(): DataFrame&lt;br&gt;+ clear(include_system)&lt;br&gt;+ to_dict(): dict&lt;br&gt;+ from_dict(): ConversationHistory" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;align=left;spacing=10;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="720" y="50" width="260" height="230" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="Class_Metrics" value="&lt;b&gt;Metrics&lt;/b&gt;&lt;hr&gt;- _records: List&lt;hr&gt;+ log(usage, model, active_nodes)&lt;br&gt;+ to_dataframe(): DataFrame&lt;br&gt;+ clear()&lt;br&gt;+ to_dict(): dict&lt;br&gt;+ from_dict(): Metrics" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;align=left;spacing=10;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="720" y="320" width="260" height="150" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="Class_ContentPart" value="&lt;b&gt;&amp;lt;&amp;lt;Abstract&amp;gt;&amp;gt;&lt;br&gt;ContentPart&lt;/b&gt;&lt;hr&gt;&lt;hr&gt;+ encode(): dict" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;align=left;spacing=10;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="360" y="450" width="260" height="80" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="Class_Image" value="&lt;b&gt;Image&lt;/b&gt;&lt;hr&gt;+ source: str&lt;br&gt;+ detail: str&lt;hr&gt;+ encode(): dict&lt;br&gt;- _encode_local(): dict&lt;br&gt;- _encode_url(): dict" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;align=left;spacing=10;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="360" y="580" width="260" height="120" as="geometry" />
+        </mxCell>
+        
+        <!-- Relationships -->
+        <mxCell id="rel1" value="Creates" style="endArrow=classic;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;dashed=1;" edge="1" parent="1" source="Class_Client" target="Class_Chat">
+          <mxGeometry width="50" height="50" relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="rel2" value="  1" style="endArrow=none;startArrow=diamondThin;startFill=1;html=1;rounded=0;exitX=1;exitY=0.25;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="Class_Chat" target="Class_ConvHist">
+          <mxGeometry width="50" height="50" relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="rel3" value="  1" style="endArrow=none;startArrow=diamondThin;startFill=1;html=1;rounded=0;exitX=1;exitY=0.75;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="Class_Chat" target="Class_Metrics">
+          <mxGeometry width="50" height="50" relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="rel4" value="" style="endArrow=block;endFill=0;html=1;rounded=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="Class_Image" target="Class_ContentPart">
+          <mxGeometry width="50" height="50" relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="rel5" value="Uses" style="endArrow=classic;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;dashed=1;" edge="1" parent="1" source="Class_Chat" target="Class_ContentPart">
+          <mxGeometry width="50" height="50" relative="1" as="geometry" />
+        </mxCell>
+        
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

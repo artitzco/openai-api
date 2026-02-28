@@ -3,20 +3,29 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-# ¡Aquí está la magia! Este es el nombre de instalación usando guiones
-name = "openai-api"
+name = "oiaapi"
 version = "0.1.0"
-description = "Interfaz amigable para manejar la API de OpenAI desde Python"
+description = "A minimalist and powerful interface for the OpenAI API with multimodal and history management support."
 authors = [
-    {name = "Tu Nombre", email = "tu@email.com"},
+    {name = "artitzco", email = "artitzco@proton.me"},
 ]
 readme = "README.md"
 requires-python = ">=3.8"
 dependencies = [
     "openai>=1.0.0",
     "pandas>=1.0.0",
+    "pillow>=9.0.0",
+]
+license = {text = "MIT"}
+keywords = ["openai", "api", "chat", "multimodal", "history", "metrics"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
 ]
 
+[project.urls]
+"Homepage" = "https://github.com/artitzco/openai-api"
+
 [tool.setuptools.packages.find]
-# Le decimos dónde buscar el código importable
 where = ["src"]
