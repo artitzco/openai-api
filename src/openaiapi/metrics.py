@@ -71,6 +71,13 @@ class Metrics:
         df.columns = pd.MultiIndex.from_tuples(padded_columns)
         return df
 
+    def __str__(self) -> str:
+        return f"Metrics(total_requests={len(self._records)})"
+
+    def __repr__(self) -> str:
+        display(self.to_dataframe())
+        return self.__str__()
+
     def deepcopy(self) -> "Metrics":
         """Devuelve una copia profunda e independiente de las métricas."""
         new_metrics = Metrics()
@@ -80,3 +87,14 @@ class Metrics:
     def clear(self) -> None:
         """Reinicia todos los registros de métricas."""
         self._records.clear()
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Devuelve el estado completo de las métricas como un diccionario."""
+        return {"records": self._records}
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "Metrics":
+        """Crea una instancia de métricas a partir de un diccionario."""
+        metrics = cls()
+        metrics._records = data["records"]
+        return metrics

@@ -2,6 +2,8 @@
 _pruebas/
 .agents/
 notebooks/
+img/
+output/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

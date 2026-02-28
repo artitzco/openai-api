@@ -192,6 +192,15 @@ class ConversationHistory:
             })
         return pd.DataFrame(records)
 
+    def __str__(self) -> str:
+        total = len(self._nodes)
+        active = len([n for n in self._nodes if n["active"]])
+        return f"ConversationHistory(total_nodes={total}, active_nodes={active})"
+
+    def __repr__(self) -> str:
+        display(self.to_dataframe())
+        return self.__str__()
+
     def deepcopy(self) -> "ConversationHistory":
         """Devuelve una copia profunda e independiente del historial."""
         new_history = ConversationHistory()
@@ -211,3 +220,18 @@ class ConversationHistory:
             if node["role"] == "system" and not include_system:
                 continue
             node["active"] = False
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Devuelve el estado completo del historial como un diccionario."""
+        return {
+            "nodes": self._nodes,
+            "next_id": self._next_id
+        }
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "ConversationHistory":
+        """Crea una instancia de historial a partir de un diccionario."""
+        history = cls()
+        history._nodes = data["nodes"]
+        history._next_id = data["next_id"]
+        return history

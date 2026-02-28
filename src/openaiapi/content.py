@@ -18,6 +18,12 @@ class ContentPart:
         raise NotImplementedError(
             "Cada ContentPart debe implementar el método encode().")
 
+    def __str__(self) -> str:
+        return f"<{self.__class__.__name__}>"
+
+    def __repr__(self) -> str:
+        return self.__str__()
+
 
 class Image(ContentPart):
     """
@@ -59,3 +65,6 @@ class Image(ContentPart):
                 "detail": self.detail
             }
         }
+
+    def __str__(self) -> str:
+        return f"Image(source='{self.path_or_url}', detail='{self.detail}')"

@@ -1,4 +1,5 @@
 import os
+import json
 import copy
 from openai import OpenAI
 from typing import List, Dict, Optional, Any, Union
@@ -7,7 +8,7 @@ from .history import ConversationHistory
 from .metrics import Metrics
 
 
-class ChatClient:
+class Chat:
     """
     Clase para manejar una conversación (chat) con un modelo de OpenAI.
     Gestiona el historial mediante nodos con IDs y delega las métricas
@@ -56,12 +57,12 @@ class ChatClient:
         """
         self.model = model
 
-    def copy(self) -> "ChatClient":
+    def copy(self) -> "Chat":
         """
         Crea y devuelve una copia exacta e independiente del cliente actual.
         Alterar la copia no afectará el historial ni las métricas del cliente original.
         """
-        new_client = ChatClient(
+        new_client = Chat(
             api_key=self.client.api_key,
             model=self.model
         )
@@ -148,3 +149,41 @@ class ChatClient:
         """
         self.history.clear(include_system=include_system)
         self.metrics.clear()
+
+    def __str__(self) -> str:
+        return f"Chat(model='{self.model}', history={self.history}, metrics={self.metrics})"
+
+    def __repr__(self) -> str:
+        return self.__str__()
+
+    def save(self, path: str) -> None:
+        """
+        Guarda el estado completo de la conversación y las métricas en un archivo JSON.
+        """
+        data = {
+            "model": self.model,
+            "history": self.history.to_dict(),
+            "metrics": self.metrics.to_dict()
+        }
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=4)
+
+    @classmethod
+    def load(cls, path: str, api_key: Optional[str] = None, **kwargs) -> "Chat":
+        """
+        Carga una instancia de Chat desde un archivo JSON.
+        """
+        if not os.path.exists(path):
+            raise FileNotFoundError(f"No se encontró el archivo en: {path}")
+
+        with open(path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+
+        # Crear nueva instancia
+        instance = cls(api_key=api_key, model=data["model"], **kwargs)
+
+        # Restaurar estado delegado
+        instance.history = ConversationHistory.from_dict(data["history"])
+        instance.metrics = Metrics.from_dict(data["metrics"])
+
+        return instance
